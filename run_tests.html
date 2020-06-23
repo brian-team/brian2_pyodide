@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript">
+        // set the pyodide files URL (packages.json, pyodide.asm.data etc)
+        window.languagePluginUrl = 'http://localhost:8000/';
+    </script>
+    <script src="pyodide.js"></script>
+</head>
+<body>
+  Pyodide test page <br>
+  Open your browser console to see pyodide output
+  <script type="text/javascript">
+        languagePluginLoader.then(function () {
+            pyodide.loadPackage(['Brian2', 'numpy', 'scipy', 'pyparsing', 'Jinja2', 'sympy', 'setuptools', 'pytest']).then(() => {
+            console.log(pyodide.runPython('import sys\nsys.version'));
+            console.log(pyodide.runPython('import brian2'));
+            console.log(pyodide.runPython('brian2.__version__'));
+            console.log(pyodide.runPython('brian2.test()'));
+            });
+        });
+  </script>
+</body>

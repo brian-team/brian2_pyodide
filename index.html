@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript">
+        // set the pyodide files URL (packages.json, pyodide.asm.data etc)
+        window.languagePluginUrl = 'http://localhost:8000/';
+    </script>
+    <script src="pyodide.js"></script>
+</head>
+<body>
+Pyodide Brian2 test <br>
+<p id="loading">Loading libraries...</p>  
+<label for="code">Code:</label>
+<textarea id="code" name="code" rows="50" cols="80" form"codesubmit">
+from brian2 import *
+
+taum = 20*ms
+taue = 5*ms
+taui = 10*ms
+Vt = -50*mV
+Vr = -60*mV
+El = -49*mV
+
+eqs = '''
+dv/dt  = (ge+gi-(v-El))/taum : volt (unless refractory)
+dge/dt = -ge/taue : volt
+dgi/dt = -gi/taui : volt
+'''
+
+P = NeuronGroup(4000, eqs, threshold='v>Vt', reset='v = Vr', refractory=5*ms,
+                method='exact')
+P.v = 'Vr + rand() * (Vt - Vr)'
+P.ge = 0*mV
+P.gi = 0*mV
+
+we = (60*0.27/10)*mV # excitatory synaptic weight (voltage)
+wi = (-20*4.5/10)*mV # inhibitory synaptic weight
+Ce = Synapses(P, P, on_pre='ge += we')
+Ci = Synapses(P, P, on_pre='gi += wi')
+Ce.connect('i<3200', p=0.02)
+Ci.connect('i>=3200', p=0.02)
+
+s_mon = SpikeMonitor(P)
+
+run(1 * second, report='text')
+
+plt.plot(s_mon.t/ms, s_mon.i, ',k')
+plt.xlabel('Time (ms)')
+plt.ylabel('Neuron index')
+# Convert image to base64
+import base64
+import io 
+pic_IObytes = io.BytesIO()
+plt.savefig(pic_IObytes,  format='png')
+pic_IObytes.seek(0)
+brian_pic = base64.b64encode(pic_IObytes.read())
+</textarea>
+<input type="button" onclick="runCode();" value="Run code">
+
+<div id="pyplotdiv">
+<label for="pyplotfigure">Image stored in <code>brian_pic</code>:</label>
+<img id="pyplotfigure"/>
+</div>
+ 
+
+  <script type="text/javascript">
+        languagePluginLoader.then(function () {
+            pyodide.loadPackage(['Brian2', 'numpy', 'scipy', 'pyparsing', 'Jinja2', 'sympy', 'setuptools', 'pytest', 'matplotlib']).then(() => {
+            document.getElementById("loading").textContent="Libraries loaded";
+            });
+        });
+        function runCode() {
+            code = document.getElementById("code").value;
+            console.log(pyodide.runPython(code));
+            var decoder = new TextDecoder("utf-8");
+            document.getElementById("pyplotfigure").src = "data:image/png;base64," + decoder.decode(pyodide.globals.brian_pic);
+        };
+  </script>
+</body>
