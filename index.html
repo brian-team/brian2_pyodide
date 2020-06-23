@@ -65,7 +65,7 @@ brian_pic = base64.b64encode(pic_IObytes.read())
 
   <script type="text/javascript">
         languagePluginLoader.then(function () {
-            pyodide.loadPackage(['Brian2', 'numpy', 'scipy', 'pyparsing', 'Jinja2', 'sympy', 'setuptools', 'pytest', 'matplotlib']).then(() => {
+            pyodide.loadPackage(['Brian2', 'numpy', 'pyparsing', 'Jinja2', 'sympy', 'setuptools', 'pytest', 'matplotlib']).then(() => {
             document.getElementById("loading").textContent="Libraries loaded";
             });
         });
