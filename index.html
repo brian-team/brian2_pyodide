@@ -63,14 +63,15 @@ brian_pic = base64.b64encode(pic_IObytes.read())
 </div>
  
 <script type="text/javascript">
+    document.getElementById("runcode_button").disabled = true;
     var pyodideWorker = new Worker('./webworker.js')
-
     pyodideWorker.onerror = (e) => {
       console.log(`Error in pyodideWorker at ${e.filename}, Line: ${e.lineno}, ${e.message}`)
     }
 
     pyodideWorker.onmessage = (e) => {
       const {results, error} = e.data
+      document.getElementById("runcode_button").disabled = false;
       console.log('Received message from pyodideWorker: ', e.data);
       if (error) {
         console.log('pyodideWorker error: ', error)
@@ -87,6 +88,9 @@ brian_pic = base64.b64encode(pic_IObytes.read())
 
     document.getElementById("runcode_button").onclick = function() {
         code = document.getElementById("code").value;
+        var button = document.getElementById("runcode_button");
+        button.value = "Running...";
+        button.disabled = true;
         var data = {'python' : code};
         pyodideWorker.postMessage(data);
     };
