@@ -55,25 +55,41 @@ plt.savefig(pic_IObytes,  format='png')
 pic_IObytes.seek(0)
 brian_pic = base64.b64encode(pic_IObytes.read())
 </textarea>
-<input type="button" onclick="runCode();" value="Run code">
+<input type="button" id="runcode_button" value="Run code">
 
 <div id="pyplotdiv">
 <label for="pyplotfigure">Image stored in <code>brian_pic</code>:</label>
 <img id="pyplotfigure"/>
 </div>
  
+<script type="text/javascript">
+    var pyodideWorker = new Worker('./webworker.js')
 
-  <script type="text/javascript">
-        languagePluginLoader.then(function () {
-            pyodide.loadPackage(['Brian2', 'numpy', 'pyparsing', 'Jinja2', 'sympy', 'setuptools', 'pytest', 'matplotlib']).then(() => {
-            document.getElementById("loading").textContent="Libraries loaded";
-            });
-        });
-        function runCode() {
-            code = document.getElementById("code").value;
-            console.log(pyodide.runPython(code));
-            var decoder = new TextDecoder("utf-8");
-            document.getElementById("pyplotfigure").src = "data:image/png;base64," + decoder.decode(pyodide.globals.brian_pic);
-        };
+    pyodideWorker.onerror = (e) => {
+      console.log(`Error in pyodideWorker at ${e.filename}, Line: ${e.lineno}, ${e.message}`)
+    }
+
+    pyodideWorker.onmessage = (e) => {
+      const {results, error} = e.data
+      console.log('Received message from pyodideWorker: ', e.data);
+      if (error) {
+        console.log('pyodideWorker error: ', error)
+      }
+      else if (results) {
+          console.log('pyodideWorker results: ', results);
+          var decoder = new TextDecoder("utf-8");
+          var pic = decoder.decode(results);
+          document.getElementById("pyplotfigure").src = 'data:image/png;base64,' + pic;
+      } else {
+          document.getElementById("loading").textContent="Libraries loaded";
+      }
+    }
+
+    document.getElementById("runcode_button").onclick = function() {
+        code = document.getElementById("code").value;
+        var data = {'python' : code};
+        pyodideWorker.postMessage(data);
+    };
+    
   </script>
 </body>
