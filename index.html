@@ -11,7 +11,7 @@
 Pyodide Brian2 test <br>
 <p id="loading">Loading libraries...</p>  
 <label for="code">Code:</label>
-<textarea id="code" name="code" rows="50" cols="80" form"codesubmit">
+<textarea id="code" name="code" rows="43" cols="80" form"codesubmit">
 from brian2 import *
 
 taum = 20*ms
@@ -70,17 +70,20 @@ brian_pic = base64.b64encode(pic_IObytes.read())
     }
 
     pyodideWorker.onmessage = (e) => {
-      const {results, error} = e.data
-      document.getElementById("runcode_button").disabled = false;
+      const {results, error} = e.data;
+      var button = document.getElementById("runcode_button");
+      button.disabled = false;
       console.log('Received message from pyodideWorker: ', e.data);
       if (error) {
         console.log('pyodideWorker error: ', error)
+        button.value = "Run code";
       }
       else if (results) {
           console.log('pyodideWorker results: ', results);
           var decoder = new TextDecoder("utf-8");
           var pic = decoder.decode(results);
           document.getElementById("pyplotfigure").src = 'data:image/png;base64,' + pic;
+          button.value = "Run code";
       } else {
           document.getElementById("loading").textContent="Libraries loaded";
       }
