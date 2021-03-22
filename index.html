@@ -57,7 +57,7 @@ import io
 pic_IObytes = io.BytesIO()
 plt.savefig(pic_IObytes,  format='png')
 pic_IObytes.seek(0)
-brian_pic = str(base64.b64encode(pic_IObytes.read())).decode('utf-8')
+brian_pic = str(base64.b64encode(pic_IObytes.read()), 'utf-8')
 </textarea>
 <input type="button" id="runcode_button" value="Run code">
 
